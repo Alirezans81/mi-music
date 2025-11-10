@@ -16,6 +16,7 @@ import { z } from "zod";
 import { Formik } from "formik";
 import useSWRMutation from "swr/mutation";
 import { useRouter } from "next/navigation";
+import { loginAction } from "./actions";
 
 const schema = z.object({
   username: z.string().min(1, "Enter your username."),
@@ -23,39 +24,17 @@ const schema = z.object({
 });
 type FormValues = z.infer<typeof schema>;
 
-async function login(url: string, { arg }: { arg: FormValues }) {
-  try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(arg),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      const error = new Error();
-      error.message = data.message;
-      throw error;
-    }
-
-    return data;
-  } catch (error) {
-    return error;
-  }
+async function fetcher(_url: string, { arg }: { arg: FormValues }) {
+  await loginAction(arg);
 }
 
 export default function LoginForm() {
   const router = useRouter();
 
-  const { trigger, isMutating, data } = useSWRMutation(
+  const { trigger, isMutating, error } = useSWRMutation(
     "/api/auth/login",
-    login
+    fetcher
   );
-
-  console.log(data);
 
   return (
     <Formik<FormValues>
@@ -75,7 +54,7 @@ export default function LoginForm() {
       onSubmit={(values) => {
         trigger(values, {
           onSuccess: () => {
-            router.replace("/dashboard");
+            router.replace("/songs");
           },
         });
       }}
@@ -123,9 +102,9 @@ export default function LoginForm() {
             </form>
           </CardContent>
           <CardFooter className="flex-col gap-2">
-            {(data as Error) && (
+            {error && (
               <Label className="font-light text-red-500 mb-2">
-                {data.message}
+                {error.message}
               </Label>
             )}
             <Button

@@ -19,12 +19,12 @@ export async function proxy(request: NextRequest) {
       request.nextUrl.pathname === "/login" ||
       request.nextUrl.pathname === "/register")
   ) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    return NextResponse.redirect(new URL("/songs", request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/", "/dashboard/:path*", "/login", "/register", '/songs/:path*'],
+  matcher: ["/", "/songs/:path*", "/login", "/register", "/songs/:path*"],
 };

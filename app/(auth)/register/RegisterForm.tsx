@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { z } from "zod";
 import { Formik } from "formik";
 import useSWRMutation from "swr/mutation";
+import { registerAction } from "./actions";
 
 const schema = z
   .object({
@@ -44,35 +45,12 @@ const schema = z
   });
 type FormValues = z.infer<typeof schema>;
 
-async function register(url: string, { arg }: { arg: FormValues }) {
-  try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(arg),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      const error = new Error();
-      error.message = data.message;
-      throw error;
-    }
-
-    return data;
-  } catch (error) {
-    return error;
-  }
+async function fetcher(_url: string, { arg }: { arg: FormValues }) {
+  await registerAction(arg);
 }
 
 export default function RegisterForm() {
-  const { trigger, isMutating, data } = useSWRMutation(
-    "/api/auth/register",
-    register
-  );
+  const { trigger, isMutating, error } = useSWRMutation("register", fetcher);
 
   return (
     <Formik<FormValues>
@@ -187,9 +165,9 @@ export default function RegisterForm() {
             </form>
           </CardContent>
           <CardFooter className="flex-col gap-2">
-            {(data as Error) && (
+            {error && (
               <Label className="font-light text-red-500 mb-2">
-                {data.message}
+                {error.message}
               </Label>
             )}
             <Button
