@@ -1,10 +1,22 @@
 import MusicCard from "@/components/music-card";
-import { getSongs } from "./actions";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { AddSongDialog } from "@/components/dialogs/songs/add-song-dialog";
+import { tempSongs } from "@/consts/songs";
+import { Song } from "@/types/song";
+
+const getTempSongs = (): Promise<Song[]> => {
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => {
+      resolve(tempSongs);
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  });
+};
 
 export default async function Dashboard() {
-  const songs = await getSongs();
+  // const songs = await getSongs();
+  const songs = await getTempSongs();
 
   return (
     <div className="w-full min-h-full flex flex-col gap-3">

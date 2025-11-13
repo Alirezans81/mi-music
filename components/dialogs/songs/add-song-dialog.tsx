@@ -14,7 +14,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Formik } from "formik";
+import useSWRMutation from "swr/mutation";
 import { z } from "zod";
+import { addSongAction } from "./actions";
+import { useEffect } from "react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const schema = z.object({
   album_name: z.string().min(1, "Enter the album name."),
@@ -22,12 +27,40 @@ const schema = z.object({
   duration: z.string().min(1, "Enter the duration."),
   title: z.string().min(1, "Enter the title."),
   year: z.string().min(1, "Enter the year."),
-  file: z.instanceof(File, { message: "Select a file." }),
+  file: z.instanceof(File).optional(),
   format: z.string().min(1, "Enter the format."),
 });
 type FormValues = z.infer<typeof schema>;
 
+const addSong = async (
+  _key: string,
+  options: {
+    arg: {
+      title: string;
+      album_name: string;
+      artist_name: string;
+      duration: string;
+      year: string;
+      file: File;
+      format: string;
+    };
+  }
+) => {
+  const { arg: data } = options;
+  return await addSongAction(data);
+};
+
 export function AddSongDialog() {
+  const router = useRouter();
+
+  const { trigger, isMutating, error } = useSWRMutation("add-song", addSong);
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error.message);
+    }
+  }, [error]);
+
   return (
     <Formik<FormValues>
       initialValues={{
@@ -48,7 +81,29 @@ export function AddSongDialog() {
         });
         return errors;
       }}
-      onSubmit={() => {}}
+      onSubmit={(values, { setFieldError }) => {
+        if (values.file) {
+          trigger(
+            values as {
+              title: string;
+              album_name: string;
+              artist_name: string;
+              duration: string;
+              year: string;
+              file: File;
+              format: string;
+            },
+            {
+              onSuccess: () => {
+                router.refresh();
+                toast.success("Song added successfully");
+              },
+            }
+          );
+        } else {
+          setFieldError("file", "Select the file");
+        }
+      }}
     >
       {({
         values,
@@ -66,7 +121,7 @@ export function AddSongDialog() {
             <DialogHeader>
               <DialogTitle>Add a new song</DialogTitle>
               <DialogDescription>
-                To add a new song, please provide the link below.
+                To add a new song, please fill out the form below.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
@@ -133,7 +188,7 @@ export function AddSongDialog() {
               </div>
               <div className="flex flex-col gap-2">
                 <div className="grid gap-2">
-                  <Label htmlFor="year">Artist Name</Label>
+                  <Label htmlFor="year">Year</Label>
                   <Input
                     id="year"
                     name="year"
@@ -162,7 +217,7 @@ export function AddSongDialog() {
                     accept="audio/*"
                   />
                   <Label htmlFor="username" className="font-light text-red-500">
-                    {errors.artist_name}
+                    {errors.file}
                   </Label>
                 </div>
               </div>
@@ -171,6 +226,7 @@ export function AddSongDialog() {
               <Button
                 type="submit"
                 variant="outline"
+                disabled={isMutating}
                 onClick={() => handleSubmit()}
               >
                 Add

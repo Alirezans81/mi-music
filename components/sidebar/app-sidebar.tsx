@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, Music } from "lucide-react";
+import { ListMusic, LogOut, Music } from "lucide-react";
 
 import {
   Sidebar,
@@ -28,6 +28,11 @@ const items = [
     title: "Songs",
     url: "/songs",
     icon: Music,
+  },
+  {
+    title: "Playlists",
+    url: "/playlists",
+    icon: ListMusic,
   },
 ];
 
@@ -74,7 +79,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
         <SidebarGroup>
-          <SidebarGroupLabel>Playlists</SidebarGroupLabel>
+          <SidebarGroupLabel>Recent Playlists</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {isLoading ? (

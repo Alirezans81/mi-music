@@ -1,6 +1,6 @@
 import { Song } from "./song";
 
-export type playlist = {
+export type Playlist = {
   title: string;
   created_at: string;
   id: number;

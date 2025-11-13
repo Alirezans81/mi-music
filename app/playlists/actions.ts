@@ -1,16 +1,16 @@
 "use server";
 
 import { Token } from "@/types/auth";
-import { Song } from "@/types/song";
+import { Playlist } from "@/types/playlist";
 import { cookies } from "next/headers";
 
-export const getSongs = async (): Promise<Song[]> => {
+export const getPlaylists = async (): Promise<Playlist[]> => {
   const tokenCookie = (await cookies()).get("token");
   const token: Token = tokenCookie ? JSON.parse(tokenCookie.value) : null;
 
   if (!token?.access_token) return [];
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/song`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/playlist`, {
     headers: { Authorization: `Bearer ${token.access_token}` },
   });
 
